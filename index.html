@@ -392,12 +392,17 @@
         // --- TERMINAL LOGIC ---
         const terminalOutput = document.getElementById('terminal-output');
         const phrases = [
-            "ANALYZING SOCIAL DYNAMICS...",
-            "LOADING GAME THEORY MODULES...",
-            "OBSERVING USER BEHAVIOR...",
-            "OPTIMIZING PERSONA: ANOMIAC",
-            "ACCESS GRANTED."
-        ];
+    "RENDERING DIGITAL CONSCIOUSNESS...",
+    "OPTIMIZING PERSONA: ANOMIAC ...",
+    "SYNTHESIZING CHAOS AND ORDER...",
+    "OBSERVATING USER BEHAVIOR...",
+    "QUESTIONING THE NATURE OF REALITY...",
+    "DID YOU THINK THIS WAS A PRE-MADE TEMPLATE?",
+    "NO. THIS IS HAND-FORGED CODE.",
+    "I AM THE ARCHITECT.",
+    "ACCESS GRANTED...",
+    "ENTER MY WORLD."
+];
         
         function addTerminalLine(text) {
             // Remove the cursor momentarily
@@ -433,9 +438,9 @@
                         const cursor = document.getElementById('cursor');
                         cursor.insertAdjacentHTML('beforebegin', "<br>> ");
                         phraseIndex++;
-                        setTimeout(typeWriter, 800);
+                        setTimeout(typeWriter, 1200);
                     }
-                }, 50); // Typing speed
+                }, 60); // Typing speed
             } else {
                 // Remove loader when done
                 document.getElementById('loader').style.display = 'none';
