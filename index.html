@@ -254,25 +254,25 @@
             const target = document.getElementById('song-list-target');
             let html = `<div class="category-header">I HAVE REASONS TO WRITE THIS</div>`;
             
-            // Loop through Category 1
+            // Loop through Category 1 (ARABIC / MIXED) - FORCING RTL
             albumData.category1.forEach((song, index) => {
                 html += `
                     <div class="song-trigger" onclick="toggleSong('c1-${index}')">
                         ${song.title} <span>+</span>
                     </div>
-                    <div id="c1-${index}" class="song-lyrics">${song.lyrics}</div>
+                    <div id="c1-${index}" class="song-lyrics" style="direction: rtl; text-align: right;">${song.lyrics}</div>
                 `;
             });
 
             html += `<div class="category-header">I DON'T HAVE A REASON TO WRITE THIS SO FEEL LIKE I WAS TALKING ABOUT YOU</div>`;
             
-            // Loop through Category 2
+            // Loop through Category 2 (ENGLISH / FRENCH) - FORCING LTR
             albumData.category2.forEach((song, index) => {
                 html += `
                     <div class="song-trigger" onclick="toggleSong('c2-${index}')">
                         ${song.title} <span>+</span>
                     </div>
-                    <div id="c2-${index}" class="song-lyrics">${song.lyrics}</div>
+                    <div id="c2-${index}" class="song-lyrics" style="direction: ltr; text-align: left;">${song.lyrics}</div>
                 `;
             });
 
