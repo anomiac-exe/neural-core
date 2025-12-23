@@ -254,7 +254,7 @@
             const target = document.getElementById('song-list-target');
             let html = `<div class="category-header">I HAVE REASONS TO WRITE THIS</div>`;
             
-            // Loop through Category 1 (ARABIC / MIXED) - FORCING RTL
+            // CATEGORY 1: Force ALL to be Arabic (RTL)
             albumData.category1.forEach((song, index) => {
                 html += `
                     <div class="song-trigger" onclick="toggleSong('c1-${index}')">
@@ -266,13 +266,19 @@
 
             html += `<div class="category-header">I DON'T HAVE A REASON TO WRITE THIS SO FEEL LIKE I WAS TALKING ABOUT YOU</div>`;
             
-            // Loop through Category 2 (ENGLISH / FRENCH) - FORCING LTR
+            // CATEGORY 2: Smart Detection
             albumData.category2.forEach((song, index) => {
+                // Song 1 (index 0) & Song 2 (index 1) = English (LTR)
+                // Song 3 (index 2) = Arabic (RTL)
+                
+                let dir = (index === 2) ? 'rtl' : 'ltr';       // If it's the 3rd song, go Right-to-Left
+                let align = (index === 2) ? 'right' : 'left';  // If it's the 3rd song, align Right
+
                 html += `
                     <div class="song-trigger" onclick="toggleSong('c2-${index}')">
                         ${song.title} <span>+</span>
                     </div>
-                    <div id="c2-${index}" class="song-lyrics" style="direction: ltr; text-align: left;">${song.lyrics}</div>
+                    <div id="c2-${index}" class="song-lyrics" style="direction: ${dir}; text-align: ${align};">${song.lyrics}</div>
                 `;
             });
 
