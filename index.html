@@ -12,9 +12,11 @@
     <style>
         :root {
             --void: #050505;
+            --depth: #0a0a0a;
             --ghost: #F0F0F0;
-            --cyber-grey: #4A4A4A;
+            --cyber-grey: #666666;
             --alert: #FF3333;
+            --success: #00FF41;
             --font-tech: 'JetBrains Mono', monospace;
             --font-high: 'Cormorant Garamond', serif;
         }
@@ -32,7 +34,7 @@
             padding: 2rem 1.5rem;
         }
 
-        /* CRT Overlay Effect */
+        /* CRT Effect */
         body::before {
             content: " ";
             display: block;
@@ -44,264 +46,268 @@
             pointer-events: none;
         }
 
-        /* Header / Identity */
-        .header {
-            margin-bottom: 3rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        h1 {
-            font-family: var(--font-high);
-            font-size: 3.5rem;
-            font-weight: 400;
-            letter-spacing: -2px;
-            line-height: 0.9;
-            mix-blend-mode: exclusion;
-        }
-
-        .status-dot {
-            height: 8px;
-            width: 8px;
-            background-color: var(--ghost);
-            border-radius: 50%;
-            display: inline-block;
-            animation: pulse 4s infinite;
-        }
-
-        /* Terminal Output Area */
-        .terminal {
+        .header { margin-bottom: 2rem; position: relative; z-index: 1; }
+        h1 { font-family: var(--font-high); font-size: 3rem; letter-spacing: -2px; line-height: 0.9; mix-blend-mode: exclusion; }
+        
+        #main-display {
             flex-grow: 1;
             font-size: 0.85rem;
             line-height: 1.6;
             color: var(--cyber-grey);
             position: relative;
             z-index: 1;
+            overflow-y: auto;
+            padding-bottom: 20px;
         }
 
-        .line {
-            margin-bottom: 1.5rem;
-            opacity: 0; /* Hidden by default for JS reveal */
-            display: block;
-        }
+        /* Terminal Animations */
+        .line { margin-bottom: 1rem; opacity: 0; display: block; }
+        .line.active { opacity: 1; }
+        .logic-title { font-family: var(--font-high); font-size: 1.4rem; color: var(--ghost); font-style: italic; }
 
-        .line.active {
-            opacity: 1;
+        /* Vault */
+        .vault-item { 
+            border: 1px solid var(--cyber-grey); 
+            padding: 1rem; 
+            cursor: pointer; 
+            transition: 0.3s;
+            margin-bottom: 10px;
         }
-
-        .highlight {
-            color: var(--ghost);
-            font-weight: 700;
-        }
-
-        /* Section Specifics */
-        .logic-title { font-family: var(--font-high); font-size: 1.5rem; color: var(--ghost); font-style: italic; }
+        .vault-item:hover { border-color: var(--ghost); background: rgba(255,255,255,0.05); }
+        .back-btn { color: var(--alert); cursor: pointer; margin-bottom: 1.5rem; display: inline-block; font-size: 0.8rem; }
         
-        .kinetics { opacity: 0.4; transition: opacity 0.5s; }
-        .kinetics:hover { opacity: 1; }
-
-        /* The Visualizer */
-        .acoustics-bar {
-            display: flex;
-            gap: 4px;
-            align-items: flex-end;
-            height: 20px;
-            margin-top: 5px;
+        .album-title { font-family: var(--font-high); font-size: 1.8rem; border-bottom: 1px solid var(--cyber-grey); padding-bottom: 10px; margin-bottom: 20px; }
+        .category-header { color: var(--success); font-size: 0.9rem; margin: 30px 0 10px; text-transform: uppercase; border-left: 3px solid var(--success); padding-left: 10px; }
+        
+        .song-trigger { 
+            cursor: pointer; 
+            padding: 12px 10px; 
+            background: rgba(255,255,255,0.03); 
+            border-left: 1px solid var(--cyber-grey); 
+            transition: all 0.3s ease; 
+            display: flex; 
+            justify-content: space-between; 
+            font-family: 'Arial', sans-serif;
+            margin-bottom: 5px;
         }
-        .bar {
-            width: 3px;
-            background: var(--cyber-grey);
-            animation: equalizer 1s infinite;
-        }
-
-        /* The Lurker Trap Button */
-        .trap-container {
-            margin-top: auto;
-            border-top: 1px solid var(--cyber-grey);
-            padding-top: 1.5rem;
-            text-align: right;
-            position: relative;
-            z-index: 10;
-        }
-
-        .restricted-btn {
-            background: transparent;
-            border: 1px solid var(--ghost);
-            color: var(--ghost);
-            padding: 0.8rem 1.5rem;
-            font-family: var(--font-tech);
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
+        .song-trigger:hover { background: rgba(255,255,255,0.1); border-left: 1px solid var(--ghost); }
+        
+        .song-lyrics { 
+            display: none; 
+            padding: 20px 15px; 
+            background: var(--depth); 
+            color: #d1d1d1; 
+            white-space: pre-wrap; 
+            line-height: 1.8; 
+            font-family: 'Arial', sans-serif; 
+            border-left: 1px dashed var(--cyber-grey); 
+            font-size: 1rem; 
         }
 
-        .restricted-btn:hover {
-            background: var(--ghost);
-            color: var(--void);
-        }
-
-        /* Animations */
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.2; }
-            100% { opacity: 1; }
-        }
-
-        @keyframes equalizer {
-            0% { height: 20%; }
-            50% { height: 100%; }
-            100% { height: 20%; }
-        }
-
-        /* Glitch Effect Helper */
-        .glitch-text {
-            position: relative;
-        }
-        .glitch-text::before, .glitch-text::after {
-            content: attr(data-text);
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--void);
-        }
-        .glitch-text::before {
-            left: 2px;
-            text-shadow: -1px 0 red;
-            clip-path: inset(0 0 0 0);
-            animation: noise-anim-2 3s infinite linear alternate-reverse;
-        }
-
-        /* JavaScript injected Modal Styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        /* Lock Game */
+        .lock-interface { margin-top: auto; border-top: 1px solid var(--cyber-grey); padding-top: 1.5rem; z-index: 10; }
+        #pass-input { background: transparent; border: 1px solid var(--cyber-grey); color: var(--ghost); font-family: var(--font-tech); padding: 10px; width: 100%; text-transform: uppercase; letter-spacing: 5px; outline: none; }
+        .feedback-msg { font-size: 0.7rem; margin-top: 8px; height: 1rem; color: var(--alert); }
+        
+        /* Success Overlay */
+        #success-msg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: flex; justify-content: center; align-items: center;
+            color: var(--ghost); font-family: var(--font-high); font-size: 1.5rem; font-style: italic;
             z-index: 100;
-            flex-direction: column;
+            opacity: 0; pointer-events: none; transition: opacity 0.5s;
         }
-        .sys-log {
-            color: var(--alert);
-            font-family: var(--font-tech);
-            margin-top: 20px;
-            text-align: center;
-            font-size: 0.9rem;
-        }
+        #success-msg.show { opacity: 1; }
+
+        .hidden { display: none !important; }
+        .active-song { display: block !important; }
+        .matrix-green { color: var(--success) !important; }
+        .alert-red { color: var(--alert) !important; }
+
     </style>
 </head>
 <body>
 
+    <div id="success-msg">"You're smart, that's really nice."</div>
+
     <header class="header">
-        <div class="status-dot"></div>
-        <h1 class="glitch-text" data-text="ANOMIAC">ANOMIAC</h1>
-        <p style="font-family: var(--font-high); font-style: italic; color: var(--cyber-grey);">System Version 9.0.1</p>
+        <h1>ANOMIAC</h1>
+        <p style="font-family: var(--font-high); font-style: italic; color: var(--cyber-grey);">Encrypted Node</p>
     </header>
 
-    <main class="terminal" id="terminal">
-        </main>
+    <div id="main-display">
+        <div id="terminal-content"></div>
 
-    <div class="trap-container">
-        <button class="restricted-btn" id="lureBtn">Warning: Restricted Access</button>
+        <div id="vault-content" class="hidden">
+            <div style="border-bottom: 1px dashed var(--cyber-grey); padding-bottom:10px; margin-bottom: 20px;">
+                > IDENTITY VERIFIED.<br>
+                > WELCOME TO THE BLACK BOX.
+            </div>
+
+            <div id="vault-menu">
+                <div class="vault-item" onclick="openGhost()">
+                    <span class="folder-icon">[DIR]</span> 01_PROJECT_GHOST
+                </div>
+                <div class="vault-item" onclick="openAlbum()">
+                    <span class="folder-icon">[DIR]</span> 02_REFRACTION_DE_LA_LUMIÈRE
+                </div>
+            </div>
+
+            <div id="ghost-file" class="hidden">
+                <span class="back-btn" onclick="goBackToVault()"> < BACK</span>
+                <p style="color: var(--alert); border: 1px solid var(--alert); padding: 1rem;">
+                    WARNING: CLASSIFIED DATA.
+                </p>
+                <br>
+                <p>I don't know how you got here, but this is classified information about my project.</p>
+                <br>
+                <p>Send me a private message for more information.</p>
+            </div>
+
+            <div id="album-file" class="hidden">
+                <span class="back-btn" onclick="goBackToVault()"> < BACK</span>
+                <div class="album-title">RÉFRACTION DE LA LUMIÈRE</div>
+                <div id="song-list-target"></div>
+            </div>
+        </div>
     </div>
 
+    <div class="lock-interface" id="lock-panel">
+        <div style="font-size: 0.7rem; margin-bottom: 5px;">> ENTER DECRYPTION KEY (6 CHARS)</div>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="pass-input" maxlength="6" placeholder="_ _ _ _ _ _" autocomplete="off">
+        </div>
+        <div class="feedback-msg" id="feedback"></div>
+    </div>
+
+    <script src="songs.js"></script>
+
+    <script data-goatcounter="https://anomiac.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+
     <script>
-        // --- CONTENT DATA ---
+        // --- 1. TERMINAL ANIMATION LOGIC ---
         const terminalLines = [
             { type: 'text', content: 'Initializing Handshake protocol...' },
-            { type: 'text', content: 'Connection Established.' },
-            { type: 'html', content: '<br>' },
-            { type: 'html', content: '<span class="logic-title">01 // LOGIC</span>' },
-            { type: 'html', content: 'Subject: <span class="highlight">Architecting Digital Fortresses.</span>' },
-            { type: 'text', content: 'Deploying zero-trust environments. Current Status: Classifed.' },
-            { type: 'html', content: '<br>' },
-            { type: 'html', content: '<div class="kinetics"><span class="logic-title">02 // KINETICS</span><br>Primary Hardware: Biological Substrate.<br>Discipline: MMA // Maintenance Mandatory.</div>' },
-            { type: 'html', content: '<br>' },
-            { type: 'html', content: '<span class="logic-title">03 // ACOUSTICS</span>' },
-            { type: 'html', content: 'Project Ghost: Frequency tuning in progress.<div class="acoustics-bar"><div class="bar" style="animation-delay:0.1s"></div><div class="bar" style="animation-delay:0.3s"></div><div class="bar" style="animation-delay:0.5s"></div><div class="bar" style="animation-delay:0.2s"></div></div>' }
+            { type: 'html', content: '<span class="logic-title">01 // LOGIC</span><br>Subject: Architecting Digital Fortresses.' },
+            { type: 'html', content: '<span class="logic-title">02 // KINETICS</span><br>Primary Hardware: Biological Substrate.' },
+            { type: 'html', content: '<span class="logic-title">03 // ACOUSTICS</span><br>Project Ghost: Frequency tuning in progress.' },
+            { type: 'text', content: 'System Locked. Authentication Required.' }
         ];
 
-        // --- TYPEWRITER ENGINE ---
-        const terminal = document.getElementById('terminal');
+        const terminalContent = document.getElementById('terminal-content');
         
         async function runTerminal() {
             for (let line of terminalLines) {
                 const div = document.createElement('div');
                 div.className = 'line';
-                
-                if (line.type === 'html') {
-                    div.innerHTML = line.content;
-                } else {
-                    div.textContent = '> ' + line.content;
-                }
-                
-                terminal.appendChild(div);
-                
-                // Add "active" class after a brief delay to trigger CSS fade-in
+                if (line.type === 'html') div.innerHTML = line.content;
+                else div.textContent = '> ' + line.content;
+                terminalContent.appendChild(div);
                 await new Promise(r => setTimeout(r, 100)); 
                 div.classList.add('active');
-                
-                // Pause between lines to simulate reading/processing time
-                await new Promise(r => setTimeout(r, 400));
+                await new Promise(r => setTimeout(r, 300));
             }
         }
 
-        // --- THE LURKER TRAP ---
-        const lureBtn = document.getElementById('lureBtn');
+        // --- 2. PASSWORD GAME LOGIC ---
+        const correctPass = "ANOMIA";
+        const inputField = document.getElementById('pass-input');
+        const feedback = document.getElementById('feedback');
+        const lockPanel = document.getElementById('lock-panel');
+        const vaultContent = document.getElementById('vault-content');
+        const termContent = document.getElementById('terminal-content');
+        const successMsg = document.getElementById('success-msg');
 
-        lureBtn.addEventListener('click', async () => {
-            const password = prompt("ENTER ENCRYPTION KEY:");
-            
-            if (password !== "ANOMIAC") {
-                // FAKE HACKING SEQUENCE
-                lureBtn.innerText = "TRACING...";
-                lureBtn.style.borderColor = "var(--alert)";
-                lureBtn.style.color = "var(--alert)";
-                
-                // Attempt to get approximate location via IP API
-                // If this fails (ad blockers), it falls back to "Unknown Origin"
-                let location = "UNKNOWN NODE";
-                try {
-                    const response = await fetch('https://ipapi.co/json/');
-                    const data = await response.json();
-                    if(data.city) location = data.city.toUpperCase();
-                } catch (e) {
-                    location = "ENCRYPTED PROXY";
+        inputField.addEventListener('keyup', function(e) {
+            this.value = this.value.toUpperCase();
+            if (this.value.length === 6) {
+                if (this.value === correctPass) {
+                    feedback.className = "feedback-msg matrix-green";
+                    feedback.textContent = "> ACCESS GRANTED.";
+                    inputField.disabled = true;
+                    
+                    successMsg.classList.add('show');
+                    
+                    setTimeout(() => {
+                        successMsg.classList.remove('show');
+                        lockPanel.style.display = 'none';
+                        termContent.style.display = 'none';
+                        vaultContent.classList.remove('hidden');
+                        renderSongs(); // Load the songs from the other file
+                    }, 2500);
+                } else {
+                    let matches = 0;
+                    for(let i=0; i<6; i++) {
+                        if(this.value[i] === correctPass[i]) matches++;
+                    }
+                    feedback.className = "feedback-msg alert-red";
+                    feedback.textContent = `> DECRYPTION FAILED: ${matches}/6 CHARACTERS CORRECT POSITION`;
                 }
-
-                // Create the scary overlay
-                const overlay = document.createElement('div');
-                overlay.className = 'modal-overlay';
-                overlay.innerHTML = `
-                    <h1 style="color: var(--alert); font-family: var(--font-tech);">ACCESS DENIED</h1>
-                    <div class="sys-log">
-                        <p>> UNAUTHORIZED ENTRY ATTEMPT.</p>
-                        <p>> SIGNATURE CAPTURED.</p>
-                        <p>> LOCATION LOGGED: <span style="background: var(--alert); color: black; padding: 0 5px;">${location}</span></p>
-                        <br>
-                        <p>Terminate session immediately.</p>
-                    </div>
-                `;
-                document.body.appendChild(overlay);
-                
-                // Optional: Remove overlay after 4 seconds so they can reflect on what happened
-                setTimeout(() => {
-                    overlay.remove();
-                    lureBtn.innerText = "ACCESS LOCKED";
-                }, 4000);
+            } else {
+                feedback.textContent = "";
             }
         });
 
-        // Initialize
+        // --- 3. ALBUM RENDERING LOGIC ---
+        function renderSongs() {
+            const target = document.getElementById('song-list-target');
+            let html = `<div class="category-header">I HAVE REASONS TO WRITE THIS</div>`;
+            
+            // Loop through Category 1
+            albumData.category1.forEach((song, index) => {
+                html += `
+                    <div class="song-trigger" onclick="toggleSong('c1-${index}')">
+                        ${song.title} <span>+</span>
+                    </div>
+                    <div id="c1-${index}" class="song-lyrics">${song.lyrics}</div>
+                `;
+            });
+
+            html += `<div class="category-header">I DON'T HAVE A REASON TO WRITE THIS SO FEEL LIKE I WAS TALKING ABOUT YOU</div>`;
+            
+            // Loop through Category 2
+            albumData.category2.forEach((song, index) => {
+                html += `
+                    <div class="song-trigger" onclick="toggleSong('c2-${index}')">
+                        ${song.title} <span>+</span>
+                    </div>
+                    <div id="c2-${index}" class="song-lyrics">${song.lyrics}</div>
+                `;
+            });
+
+            target.innerHTML = html;
+        }
+
+        // --- 4. NAVIGATION UTILS ---
+        function openGhost() {
+            document.getElementById('vault-menu').classList.add('hidden');
+            document.getElementById('ghost-file').classList.remove('hidden');
+        }
+
+        function openAlbum() {
+            document.getElementById('vault-menu').classList.add('hidden');
+            document.getElementById('album-file').classList.remove('hidden');
+        }
+
+        function goBackToVault() {
+            document.getElementById('ghost-file').classList.add('hidden');
+            document.getElementById('album-file').classList.add('hidden');
+            document.getElementById('vault-menu').classList.remove('hidden');
+        }
+
+        function toggleSong(id) {
+            // Close all others
+            document.querySelectorAll('.song-lyrics').forEach(el => {
+                if(el.id !== id) el.classList.remove('active-song');
+            });
+            // Open clicked
+            const song = document.getElementById(id);
+            song.classList.toggle('active-song');
+        }
+
         window.onload = runTerminal;
 
     </script>
-<script data-goatcounter="https://anomiac.goatcounter.com/count"
-        async src="//gc.zgo.at/count.js"></script>
 </body>
-</html>
+                </html>
