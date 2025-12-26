@@ -2,318 +2,459 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ANOMIAC.EXE // SYSTEM STATUS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NEURAL CORE v2.1</title>
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@100;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=JetBrains+Mono:wght@300;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
 
     <style>
         :root {
-            --void: #050505;
-            --depth: #0a0a0a;
-            --ghost: #F0F0F0;
-            --cyber-grey: #666666;
-            --alert: #FF3333;
-            --success: #00FF41;
-            --font-tech: 'JetBrains Mono', monospace;
-            --font-high: 'Cormorant Garamond', serif;
+            --bg: #050505;
+            --glass: rgba(20, 20, 20, 0.95);
+            --text: #e0e0e0;
+            --accent: #ffffff;
+            --alert: #ff3333;
+            --matrix: #00ff41;
+            --border: 1px solid #333;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+        
         body {
-            background-color: var(--void);
-            color: var(--ghost);
-            font-family: var(--font-tech);
-            overflow-x: hidden;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
             height: 100vh;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            padding: 2rem 1.5rem;
+            position: relative;
         }
 
-        /* CRT Effect */
-        body::before {
-            content: " ";
-            display: block;
-            position: absolute;
-            top: 0; left: 0; bottom: 0; right: 0;
+        /* CRT OVERLAY */
+        .scanline {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 2;
             background-size: 100% 2px, 3px 100%;
             pointer-events: none;
+            z-index: 999;
+            opacity: 0.6;
         }
 
-        .header { margin-bottom: 2rem; position: relative; z-index: 1; }
-        h1 { font-family: var(--font-high); font-size: 3rem; letter-spacing: -2px; line-height: 0.9; mix-blend-mode: exclusion; }
+        /* --- SCREEN 1: BOOT SEQUENCE --- */
+        #boot-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg);
+            padding: 20px;
+            font-size: 12px;
+            color: var(--text);
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+        .boot-line { margin-bottom: 2px; opacity: 0.7; }
+        .boot-highlight { color: var(--matrix); }
+
+        /* --- SCREEN 2: LOGIN --- */
+        #login-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 40;
+        }
         
-        #main-display {
+        .login-box { width: 80%; text-align: center; }
+        
+        #password-input {
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid var(--text);
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            text-align: center;
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            text-transform: uppercase;
+            outline: none;
+            letter-spacing: 5px;
+        }
+
+        /* --- SCREEN 3: OS DASHBOARD --- */
+        #os-dashboard {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+            z-index: 30;
+        }
+
+        .status-bar {
+            display: flex; justify-content: space-between;
+            font-size: 10px; padding-bottom: 20px; border-bottom: var(--border);
+            margin-bottom: 40px;
+        }
+
+        .app-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .app-icon {
+            border: var(--border);
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: 0.2s;
+            background: rgba(255,255,255,0.02);
+            cursor: pointer;
+        }
+        
+        .app-icon:active { background: var(--accent); color: var(--bg); }
+        .material-icons-sharp { font-size: 40px; margin-bottom: 10px; }
+        .icon-label { font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
+
+        /* --- APP MODALS (WINDOWS) --- */
+        .app-window {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 0;
+            background: var(--bg);
+            z-index: 60;
+            transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border-top: 1px solid var(--text);
+        }
+
+        .app-header {
+            padding: 20px;
+            border-bottom: var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .app-content {
             flex-grow: 1;
-            font-size: 0.85rem;
-            line-height: 1.6;
-            color: var(--cyber-grey);
-            position: relative;
-            z-index: 1;
             overflow-y: auto;
-            padding-bottom: 20px;
-        }
-
-        /* Terminal Animations */
-        .line { margin-bottom: 1rem; opacity: 0; display: block; }
-        .line.active { opacity: 1; }
-        .logic-title { font-family: var(--font-high); font-size: 1.4rem; color: var(--ghost); font-style: italic; }
-
-        /* Vault */
-        .vault-item { 
-            border: 1px solid var(--cyber-grey); 
-            padding: 1rem; 
-            cursor: pointer; 
-            transition: 0.3s;
-            margin-bottom: 10px;
-        }
-        .vault-item:hover { border-color: var(--ghost); background: rgba(255,255,255,0.05); }
-        .back-btn { color: var(--alert); cursor: pointer; margin-bottom: 1.5rem; display: inline-block; font-size: 0.8rem; }
-        
-        .album-title { font-family: var(--font-high); font-size: 1.8rem; border-bottom: 1px solid var(--cyber-grey); padding-bottom: 10px; margin-bottom: 20px; }
-        .category-header { color: var(--success); font-size: 0.9rem; margin: 30px 0 10px; text-transform: uppercase; border-left: 3px solid var(--success); padding-left: 10px; }
-        
-        .song-trigger { 
-            cursor: pointer; 
-            padding: 12px 10px; 
-            background: rgba(255,255,255,0.03); 
-            border-left: 1px solid var(--cyber-grey); 
-            transition: all 0.3s ease; 
-            display: flex; 
-            justify-content: space-between; 
-            font-family: 'Arial', sans-serif;
-            margin-bottom: 5px;
-        }
-        .song-trigger:hover { background: rgba(255,255,255,0.1); border-left: 1px solid var(--ghost); }
-        
-        .song-lyrics { 
-            display: none; 
-            padding: 20px 15px; 
-            background: var(--depth); 
-            color: #d1d1d1; 
-            white-space: pre-wrap; 
-            line-height: 1.8; 
+            padding: 20px;
             font-family: 'Arial', sans-serif; 
-            border-left: 1px dashed var(--cyber-grey); 
-            font-size: 1rem; 
         }
 
-        /* Lock Game */
-        .lock-interface { margin-top: auto; border-top: 1px solid var(--cyber-grey); padding-top: 1.5rem; z-index: 10; }
-        #pass-input { background: transparent; border: 1px solid var(--cyber-grey); color: var(--ghost); font-family: var(--font-tech); padding: 10px; width: 100%; text-transform: uppercase; letter-spacing: 5px; outline: none; }
-        .feedback-msg { font-size: 0.7rem; margin-top: 8px; height: 1rem; color: var(--alert); }
+        /* GHOST APP STYLES */
+        .progress-container { margin: 20px 0; border: 1px solid var(--text); padding: 4px; }
+        .progress-bar { height: 20px; width: 64%; background: var(--text); }
+        .sys-log { font-family: 'JetBrains Mono'; font-size: 10px; color: #666; margin-top: 20px; line-height: 1.4; }
+
+        /* ALBUM APP STYLES */
+        .folder-btn {
+            width: 100%; padding: 15px; text-align: left;
+            background: transparent; border: var(--border);
+            color: var(--text); margin-bottom: 10px;
+            font-family: 'JetBrains Mono'; cursor: pointer;
+        }
+        .song-item {
+            padding: 15px 0; border-bottom: 1px dashed #333;
+            cursor: pointer; display: flex; justify-content: space-between;
+        }
+        .song-lyrics {
+            display: none; padding: 20px 0; color: #bbb;
+            white-space: pre-wrap; line-height: 1.6; font-size: 14px;
+        }
+        .album-header-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed var(--text);
+            text-transform: uppercase;
+        }
+
+        /* SECURITY APP STYLES */
+        .log-entry { font-family: 'JetBrains Mono'; font-size: 11px; margin-bottom: 5px; }
+        .log-ok { color: var(--matrix); }
+        .log-warn { color: var(--alert); }
+
+        /* UTILS */
+        .show-app { height: 90vh !important; }
+        .active-lyrics { display: block !important; }
         
-        /* Success Overlay */
-        #success-msg {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95);
-            display: flex; justify-content: center; align-items: center;
-            color: var(--ghost); font-family: var(--font-high); font-size: 1.5rem; font-style: italic;
-            z-index: 100;
-            opacity: 0; pointer-events: none; transition: opacity 0.5s;
-        }
-        #success-msg.show { opacity: 1; }
-
-        .hidden { display: none !important; }
-        .active-song { display: block !important; }
-        .matrix-green { color: var(--success) !important; }
-        .alert-red { color: var(--alert) !important; }
-
     </style>
 </head>
 <body>
 
-    <div id="success-msg">"You're smart, that's really nice."</div>
+    <div class="scanline"></div>
 
-    <header class="header">
-        <h1>ANOMIAC</h1>
-        <p style="font-family: var(--font-high); font-style: italic; color: var(--cyber-grey);">Encrypted Node</p>
-    </header>
+    <div id="boot-screen">
+        <div id="terminal-output"></div>
+    </div>
 
-    <div id="main-display">
-        <div id="terminal-content"></div>
+    <div id="login-screen">
+        <div style="font-family: 'Cormorant Garamond'; font-size: 2rem; margin-bottom: 10px;">ANOMIAC OS</div>
+        <div style="font-size: 10px; opacity: 0.6;">BIOMETRIC FAILURE. MANUAL OVERRIDE.</div>
+        <div class="login-box">
+            <input type="text" id="password-input" placeholder="PASSCODE" maxlength="6" autocomplete="off">
+        </div>
+        <div id="login-msg" style="margin-top: 15px; font-size: 10px; color: var(--alert); height: 12px;"></div>
+    </div>
 
-        <div id="vault-content" class="hidden">
-            <div style="border-bottom: 1px dashed var(--cyber-grey); padding-bottom:10px; margin-bottom: 20px;">
-                > IDENTITY VERIFIED.<br>
-                > WELCOME TO THE BLACK BOX.
+    <div id="os-dashboard">
+        <div class="status-bar">
+            <span>SECURE_CONNECTION</span>
+            <span id="clock">00:00</span>
+        </div>
+
+        <div style="margin-bottom: 30px;">
+            <h1 style="font-family: 'Cormorant Garamond'; font-size: 3rem; line-height: 1;">NEURAL<br>CORE<span style="font-size:1rem; font-family:'JetBrains Mono'">v2.1</span></h1>
+        </div>
+
+        <div class="app-grid">
+            <div class="app-icon" onclick="openApp('ghost')">
+                <span class="material-icons-sharp">folder_special</span>
+                <span class="icon-label">Ghost_Project</span>
+            </div>
+            
+            <div class="app-icon" onclick="openApp('album')">
+                <span class="material-icons-sharp">album</span>
+                <span class="icon-label">Album</span>
             </div>
 
-            <div id="vault-menu">
-                <div class="vault-item" onclick="openGhost()">
-                    <span class="folder-icon">[DIR]</span> 01_PROJECT_GHOST
-                </div>
-                <div class="vault-item" onclick="openAlbum()">
-                    <span class="folder-icon">[DIR]</span> 02_MY_ALBUM_[REFRACTION_DE_LA_LUMIÈRE]
-                </div>
+            <div class="app-icon" onclick="openApp('security')">
+                <span class="material-icons-sharp">security</span>
+                <span class="icon-label">Security</span>
             </div>
 
-            <div id="ghost-file" class="hidden">
-                <span class="back-btn" onclick="goBackToVault()"> < BACK</span>
-                <p style="color: var(--alert); border: 1px solid var(--alert); padding: 1rem;">
-                    WARNING: CLASSIFIED DATA.
-                </p>
-                <br>
-                <p>I don't know how you got here, but this is classified information about my project.</p>
-                <br>
-                <p>Send me a private message for more information.</p>
-            </div>
-
-            <div id="album-file" class="hidden">
-                <span class="back-btn" onclick="goBackToVault()"> < BACK</span>
-                <div class="album-title">RÉFRACTION DE LA LUMIÈRE</div>
-                <div id="song-list-target"></div>
+            <div class="app-icon" onclick="openInstagram()">
+                <span class="material-icons-sharp">forum</span>
+                <span class="icon-label">Comm-Link</span>
             </div>
         </div>
     </div>
 
-    <div class="lock-interface" id="lock-panel">
-        <div style="font-size: 0.7rem; margin-bottom: 5px;">> ENTER DECRYPTION KEY (6 CHARS)</div>
-        <div style="display: flex; gap: 10px;">
-            <input type="text" id="pass-input" maxlength="6" placeholder="_ _ _ _ _ _" autocomplete="off">
+    <div id="app-window" class="app-window">
+        <div class="app-header">
+            <span id="app-title">APP NAME</span>
+            <span class="material-icons-sharp" onclick="closeApp()" style="cursor:pointer;">close</span>
         </div>
-        <div class="feedback-msg" id="feedback"></div>
+        <div id="app-content" class="app-content">
+            </div>
     </div>
-
-    <script src="songs.js"></script>
 
     <script data-goatcounter="https://anomiac.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 
+    <script src="songs.js"></script>
+
     <script>
-        // --- 1. TERMINAL ANIMATION LOGIC ---
-        const terminalLines = [
-            { type: 'text', content: 'Initializing Handshake protocol...' },
-            { type: 'html', content: '<span class="logic-title">01 // LOGIC</span><br>Subject: Architecting Digital Fortresses.' },
-            { type: 'html', content: '<span class="logic-title">02 // KINETICS</span><br>Primary Hardware: Biological Substrate.' },
-            { type: 'html', content: '<span class="logic-title">03 // ACOUSTICS</span><br>Project Ghost: Frequency tuning in progress.' },
-            { type: 'text', content: 'System Locked. Authentication Required.' }
+        // --- BOOT SEQUENCE ---
+        const bootText = [
+            "Initializing Kernel...",
+            "Loading Neural Drivers...",
+            "Bypassing Firewalls...",
+            "Mounting Volume: /GHOST...",
+            "Checking Biometrics... FAILED",
+            "AUTHENTICATION REQUIRED."
         ];
 
-        const terminalContent = document.getElementById('terminal-content');
-        
-        async function runTerminal() {
-            for (let line of terminalLines) {
+        let bootIndex = 0;
+        const terminal = document.getElementById('terminal-output');
+
+        function runBoot() {
+            if (bootIndex < bootText.length) {
                 const div = document.createElement('div');
-                div.className = 'line';
-                if (line.type === 'html') div.innerHTML = line.content;
-                else div.textContent = '> ' + line.content;
-                terminalContent.appendChild(div);
-                await new Promise(r => setTimeout(r, 100)); 
-                div.classList.add('active');
-                await new Promise(r => setTimeout(r, 300));
+                div.className = 'boot-line';
+                if(bootIndex === bootText.length - 1) div.className += ' boot-highlight';
+                div.textContent = "> " + bootText[bootIndex];
+                terminal.appendChild(div);
+                bootIndex++;
+                setTimeout(runBoot, 300);
+            } else {
+                setTimeout(() => {
+                    document.getElementById('boot-screen').style.display = 'none';
+                    document.getElementById('login-screen').style.display = 'flex';
+                    document.getElementById('password-input').focus();
+                }, 1000);
             }
         }
 
-        // --- 2. PASSWORD GAME LOGIC ---
-        const correctPass = "ANOMIA";
-        const inputField = document.getElementById('pass-input');
-        const feedback = document.getElementById('feedback');
-        const lockPanel = document.getElementById('lock-panel');
-        const vaultContent = document.getElementById('vault-content');
-        const termContent = document.getElementById('terminal-content');
-        const successMsg = document.getElementById('success-msg');
+        window.onload = runBoot;
 
-        inputField.addEventListener('keyup', function(e) {
-            this.value = this.value.toUpperCase();
-            if (this.value.length === 6) {
-                if (this.value === correctPass) {
-                    feedback.className = "feedback-msg matrix-green";
-                    feedback.textContent = "> ACCESS GRANTED.";
-                    inputField.disabled = true;
-                    
-                    successMsg.classList.add('show');
-                    
+        // --- CLOCK ---
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
+        }, 1000);
+
+        // --- LOGIN LOGIC ---
+        const passInput = document.getElementById('password-input');
+        const loginMsg = document.getElementById('login-msg');
+        const CORRECT_PASS = "ANOMIA";
+        let wrongAttempts = 0;
+
+        passInput.addEventListener('keyup', (e) => {
+            passInput.value = passInput.value.toUpperCase();
+            const val = passInput.value;
+
+            if (val.length === 6) {
+                if (val === CORRECT_PASS) {
+                    loginMsg.style.color = 'var(--matrix)';
+                    loginMsg.innerText = "ACCESS GRANTED";
+                    passInput.disabled = true;
                     setTimeout(() => {
-                        successMsg.classList.remove('show');
-                        lockPanel.style.display = 'none';
-                        termContent.style.display = 'none';
-                        vaultContent.classList.remove('hidden');
-                        renderSongs(); // Load the songs from the other file
-                    }, 2500);
+                        document.getElementById('login-screen').style.display = 'none';
+                        document.getElementById('os-dashboard').style.display = 'flex';
+                    }, 800);
                 } else {
                     let matches = 0;
                     for(let i=0; i<6; i++) {
-                        if(this.value[i] === correctPass[i]) matches++;
+                        if (val[i] === CORRECT_PASS[i]) matches++;
                     }
-                    feedback.className = "feedback-msg alert-red";
-                    feedback.textContent = `> DECRYPTION FAILED: ${matches}/6 CHARACTERS CORRECT POSITION`;
+                    wrongAttempts++;
+                    loginMsg.style.color = 'var(--alert)';
+                    if (wrongAttempts >= 2) {
+                        loginMsg.innerText = `> ${matches}/6 ALIGNED. HINT: THE PASSCODE IS STARING AT YOU.`;
+                    } else {
+                        loginMsg.innerText = `> ${matches}/6 CHARACTERS ALIGNED.`;
+                    }
                 }
             } else {
-                feedback.textContent = "";
+                loginMsg.innerText = "";
             }
         });
 
-        // --- 3. ALBUM RENDERING LOGIC ---
-        function renderSongs() {
-            const target = document.getElementById('song-list-target');
-            let html = `<div class="category-header">I HAVE REASONS TO WRITE THIS</div>`;
+        // --- APP SYSTEM ---
+        const appWindow = document.getElementById('app-window');
+        const appTitle = document.getElementById('app-title');
+        const appContent = document.getElementById('app-content');
+
+        function openApp(appName) {
+            appWindow.classList.add('show-app');
             
-            // CATEGORY 1: Force ALL to be Arabic (RTL)
-            albumData.category1.forEach((song, index) => {
-                html += `
-                    <div class="song-trigger" onclick="toggleSong('c1-${index}')">
-                        ${song.title} <span>+</span>
+            if (appName === 'ghost') {
+                appTitle.innerText = "Operation: GHOST";
+                appContent.innerHTML = `
+                    <div style="font-family: 'JetBrains Mono'; margin-bottom:10px;">PROJECT COMPLETION:</div>
+                    <div class="progress-container">
+                        <div class="progress-bar"></div>
                     </div>
-                    <div id="c1-${index}" class="song-lyrics" style="direction: rtl; text-align: right;">${song.lyrics}</div>
+                    <div style="text-align:right; font-size:12px;">64%</div>
+                    <br>
+                    <p style="color: var(--alert); border: 1px solid var(--alert); padding: 10px;">
+                        WARNING: CLASSIFIED DATA.
+                    </p>
+                    <br>
+                    <p>I don't know how you got here, but this is classified information about my project.</p>
+                    <br>
+                    <div class="sys-log">
+                        > LOG_ENTRY_992: Data fragmented.<br>
+                        > LOG_ENTRY_993: Attempting recovery...<br>
+                        > LOG_ENTRY_994: Contact Admin (Anomiac) for full key.
+                    </div>
+                `;
+            } 
+            else if (appName === 'security') {
+                appTitle.innerText = "SECURITY MONITOR";
+                appContent.innerHTML = `<div id="log-feed"></div>`;
+                startFakeLogs();
+            }
+            else if (appName === 'album') {
+                appTitle.innerText = "ALBUM";
+                renderAlbumMenu();
+            }
+        }
+
+        function closeApp() {
+            appWindow.classList.remove('show-app');
+            if(logInterval) clearInterval(logInterval);
+        }
+
+        function openInstagram() {
+            window.location.href = "https://www.instagram.com/anomiac.exe?igsh=eXdjMmp4bGZtMHB3";
+        }
+
+        // --- ALBUM LOGIC (Updated Name) ---
+        function renderAlbumMenu() {
+            appContent.innerHTML = `
+                <div class="album-header-title">RÉFRACTION DE LA LUMIÈRE</div>
+                <button class="folder-btn" onclick="renderCategory(1)">[DIR] I HAVE REASONS TO WRITE THIS</button>
+                <button class="folder-btn" onclick="renderCategory(2)">[DIR] I DON'T HAVE A REASON TO WRITE THIS </button>
+                <div id="song-list-container" style="margin-top:20px;"></div>
+            `;
+        }
+
+        function renderCategory(catId) {
+            const container = document.getElementById('song-list-container');
+            let html = `<div onclick="renderAlbumMenu()" style="margin-bottom:15px; color:var(--alert); cursor:pointer;"> < BACK </div>`;
+            
+            const songs = catId === 1 ? albumData.category1 : albumData.category2;
+
+            songs.forEach((song, index) => {
+                let dir = 'ltr'; 
+                let align = 'left';
+
+                if (catId === 1) {
+                    dir = 'rtl'; align = 'right';
+                } else if (catId === 2 && index === 2) {
+                    dir = 'rtl'; align = 'right';
+                }
+
+                html += `
+                    <div class="song-item" onclick="toggleLyrics('lyr-${index}')">
+                        <span>${song.title}</span>
+                        <span class="material-icons-sharp" style="font-size:16px;">expand_more</span>
+                    </div>
+                    <div id="lyr-${index}" class="song-lyrics" style="direction: ${dir}; text-align: ${align};">
+                        ${song.lyrics}
+                    </div>
                 `;
             });
-
-            html += `<div class="category-header">I DON'T HAVE A REASON TO WRITE THIS SO FEEL LIKE I WAS TALKING ABOUT YOU</div>`;
             
-            // CATEGORY 2: Smart Detection
-            albumData.category2.forEach((song, index) => {
-                // Song 1 (index 0) & Song 2 (index 1) = English (LTR)
-                // Song 3 (index 2) = Arabic (RTL)
-                
-                let dir = (index === 2) ? 'rtl' : 'ltr';       // If it's the 3rd song, go Right-to-Left
-                let align = (index === 2) ? 'right' : 'left';  // If it's the 3rd song, align Right
-
-                html += `
-                    <div class="song-trigger" onclick="toggleSong('c2-${index}')">
-                        ${song.title} <span>+</span>
-                    </div>
-                    <div id="c2-${index}" class="song-lyrics" style="direction: ${dir}; text-align: ${align};">${song.lyrics}</div>
-                `;
-            });
-
-            target.innerHTML = html;
+            container.innerHTML = html;
         }
 
-        // --- 4. NAVIGATION UTILS ---
-        function openGhost() {
-            document.getElementById('vault-menu').classList.add('hidden');
-            document.getElementById('ghost-file').classList.remove('hidden');
+        function toggleLyrics(id) {
+            const el = document.getElementById(id);
+            if (el.style.display === 'block') {
+                el.style.display = 'none';
+            } else {
+                document.querySelectorAll('.song-lyrics').forEach(d => d.style.display = 'none');
+                el.style.display = 'block';
+            }
         }
 
-        function openAlbum() {
-            document.getElementById('vault-menu').classList.add('hidden');
-            document.getElementById('album-file').classList.remove('hidden');
+        // --- FAKE LOGS LOGIC ---
+        let logInterval;
+        function startFakeLogs() {
+            const container = document.getElementById('log-feed');
+            const messages = [
+                {text: "Firewall Active", type: "log-ok"},
+                {text: "Scanning Ports...", type: "log-ok"},
+                {text: "Connection Refused: IP 192.168.0.X", type: "log-warn"},
+                {text: "Packet Tracing...", type: "log-ok"},
+                {text: "Encryption: AES-256", type: "log-ok"},
+                {text: "Node Verification: Success", type: "log-ok"}
+            ];
+            
+            let i = 0;
+            container.innerHTML = "";
+            logInterval = setInterval(() => {
+                const msg = messages[Math.floor(Math.random() * messages.length)];
+                container.innerHTML += `<div class="log-entry ${msg.type}">> ${msg.text}</div>`;
+                container.scrollTop = container.scrollHeight;
+                i++;
+                if(i > 20) container.innerHTML = ""; 
+            }, 800);
         }
-
-        function goBackToVault() {
-            document.getElementById('ghost-file').classList.add('hidden');
-            document.getElementById('album-file').classList.add('hidden');
-            document.getElementById('vault-menu').classList.remove('hidden');
-        }
-
-        function toggleSong(id) {
-            // Close all others
-            document.querySelectorAll('.song-lyrics').forEach(el => {
-                if(el.id !== id) el.classList.remove('active-song');
-            });
-            // Open clicked
-            const song = document.getElementById(id);
-            song.classList.toggle('active-song');
-        }
-
-        window.onload = runTerminal;
 
     </script>
 </body>
-                </html>
+</html>
