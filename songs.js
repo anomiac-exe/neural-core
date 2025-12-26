@@ -607,7 +607,6 @@ Refrain
 
 T'es mon antidote, ma dope, ma dernière balle
 Je vois le ciel en toi, même quand tout s'étale.
-(Oh, ma belle)
 On s'envole loin d'ici, au-dessus des nuages.
 Mais j'ai peur qu'à l'atterrissage, y ait que des ravages.
 Donne-moi ta main , on va couper les fils
