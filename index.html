@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEURAL CORE v2.1</title>
+    <title>NEURAL CORE v2.2</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=JetBrains+Mono:wght@300;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
@@ -25,7 +25,9 @@
             background-color: var(--bg);
             color: var(--text);
             font-family: 'JetBrains Mono', monospace;
+            /* Use dvh for true mobile full screen */
             height: 100vh;
+            height: 100dvh; 
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -41,6 +43,35 @@
             z-index: 999;
             opacity: 0.6;
         }
+
+        /* --- OVERLAYS (Success & Redirect) --- */
+        .full-screen-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg);
+            z-index: 2000;
+            display: none; /* Hidden by default */
+            justify-content: center; 
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .overlay-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem;
+            color: var(--text);
+            line-height: 1.6;
+            font-style: italic;
+        }
+
+        .terminal-msg {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--matrix);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
         /* --- SCREEN 1: BOOT SEQUENCE --- */
         #boot-screen {
@@ -84,6 +115,7 @@
             text-transform: uppercase;
             outline: none;
             letter-spacing: 5px;
+            border-radius: 0; /* iOS fix */
         }
 
         /* --- SCREEN 3: OS DASHBOARD --- */
@@ -93,18 +125,24 @@
             flex-direction: column;
             padding: 20px;
             z-index: 30;
+            justify-content: center; /* Center vertical */
         }
 
         .status-bar {
+            position: absolute; top: 20px; left: 20px; right: 20px;
             display: flex; justify-content: space-between;
-            font-size: 10px; padding-bottom: 20px; border-bottom: var(--border);
-            margin-bottom: 40px;
+            font-size: 10px; padding-bottom: 10px; border-bottom: var(--border);
+        }
+
+        .dashboard-content {
+            margin-top: 40px; /* Space from status bar */
         }
 
         .app-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
+            margin-top: 30px;
         }
 
         .app-icon {
@@ -148,6 +186,7 @@
             overflow-y: auto;
             padding: 20px;
             font-family: 'Arial', sans-serif; 
+            -webkit-overflow-scrolling: touch; /* Smooth scroll iOS */
         }
 
         /* GHOST APP STYLES */
@@ -188,6 +227,7 @@
         /* UTILS */
         .show-app { height: 90vh !important; }
         .active-lyrics { display: block !important; }
+        .flex-show { display: flex !important; }
         
     </style>
 </head>
@@ -195,13 +235,28 @@
 
     <div class="scanline"></div>
 
+    <div id="success-overlay" class="full-screen-overlay">
+        <div class="overlay-text">
+            Welcome, Researcher.<br><br>
+            You found the gate.<br><br>
+            Don't believe everything you hear in Folder 02...<br>
+            some of it was meant to stay encrypted.
+        </div>
+    </div>
+
+    <div id="redirect-overlay" class="full-screen-overlay">
+        <div class="terminal-msg">
+            [ESTABLISHING SECURE CHANNEL TO @ANOMIAC.EXE...]
+        </div>
+    </div>
+
     <div id="boot-screen">
         <div id="terminal-output"></div>
     </div>
 
     <div id="login-screen">
         <div style="font-family: 'Cormorant Garamond'; font-size: 2rem; margin-bottom: 10px;">ANOMIAC OS</div>
-        <div style="font-size: 10px; opacity: 0.6;">BIOMETRIC FAILURE. ANOMIAC'S PERSONAL ARCHIVE IS LOADING</div>
+        <div style="font-size: 10px; opacity: 0.6; letter-spacing: 1px;">[SYSTEM_AUTH_REQUIRED]</div>
         <div class="login-box">
             <input type="text" id="password-input" placeholder="PASSCODE" maxlength="6" autocomplete="off">
         </div>
@@ -214,29 +269,31 @@
             <span id="clock">00:00</span>
         </div>
 
-        <div style="margin-bottom: 30px;">
-            <h1 style="font-family: 'Cormorant Garamond'; font-size: 3rem; line-height: 1;">NEURAL<br>CORE<span style="font-size:1rem; font-family:'JetBrains Mono'">v2.1</span></h1>
-        </div>
-
-        <div class="app-grid">
-            <div class="app-icon" onclick="openApp('ghost')">
-                <span class="material-icons-sharp">folder_special</span>
-                <span class="icon-label">Ghost_Project</span>
-            </div>
-            
-            <div class="app-icon" onclick="openApp('album')">
-                <span class="material-icons-sharp">album</span>
-                <span class="icon-label">Album</span>
+        <div class="dashboard-content">
+            <div style="margin-bottom: 30px;">
+                <h1 style="font-family: 'Cormorant Garamond'; font-size: 3rem; line-height: 1;">NEURAL<br>CORE<span style="font-size:1rem; font-family:'JetBrains Mono'">v2.2</span></h1>
             </div>
 
-            <div class="app-icon" onclick="openApp('security')">
-                <span class="material-icons-sharp">security</span>
-                <span class="icon-label">Security</span>
-            </div>
+            <div class="app-grid">
+                <div class="app-icon" onclick="openApp('ghost')">
+                    <span class="material-icons-sharp">folder_special</span>
+                    <span class="icon-label">Ghost_Project</span>
+                </div>
+                
+                <div class="app-icon" onclick="openApp('album')">
+                    <span class="material-icons-sharp">album</span>
+                    <span class="icon-label">Album</span>
+                </div>
 
-            <div class="app-icon" onclick="openInstagram()">
-                <span class="material-icons-sharp">forum</span>
-                <span class="icon-label">Comm-Link</span>
+                <div class="app-icon" onclick="openApp('security')">
+                    <span class="material-icons-sharp">security</span>
+                    <span class="icon-label">Security</span>
+                </div>
+
+                <div class="app-icon" onclick="openInstagram()">
+                    <span class="material-icons-sharp">forum</span>
+                    <span class="icon-label">Comm-Link</span>
+                </div>
             </div>
         </div>
     </div>
@@ -246,12 +303,10 @@
             <span id="app-title">APP NAME</span>
             <span class="material-icons-sharp" onclick="closeApp()" style="cursor:pointer;">close</span>
         </div>
-        <div id="app-content" class="app-content">
-            </div>
+        <div id="app-content" class="app-content"></div>
     </div>
 
     <script data-goatcounter="https://anomiac.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
-
     <script src="songs.js"></script>
 
     <script>
@@ -297,6 +352,7 @@
         // --- LOGIN LOGIC ---
         const passInput = document.getElementById('password-input');
         const loginMsg = document.getElementById('login-msg');
+        const successOverlay = document.getElementById('success-overlay');
         const CORRECT_PASS = "ANOMIA";
         let wrongAttempts = 0;
 
@@ -306,13 +362,23 @@
 
             if (val.length === 6) {
                 if (val === CORRECT_PASS) {
+                    // 1. Success Message on Input
                     loginMsg.style.color = 'var(--matrix)';
                     loginMsg.innerText = "ACCESS GRANTED";
                     passInput.disabled = true;
+
+                    // 2. Show Overlay after brief delay
                     setTimeout(() => {
+                         successOverlay.classList.add('flex-show');
+                    }, 500);
+
+                    // 3. Hide Overlay and Login, Show Dashboard after 4s
+                    setTimeout(() => {
+                        successOverlay.classList.remove('flex-show');
                         document.getElementById('login-screen').style.display = 'none';
                         document.getElementById('os-dashboard').style.display = 'flex';
-                    }, 800);
+                    }, 4500);
+
                 } else {
                     let matches = 0;
                     for(let i=0; i<6; i++) {
@@ -321,7 +387,7 @@
                     wrongAttempts++;
                     loginMsg.style.color = 'var(--alert)';
                     if (wrongAttempts >= 2) {
-                        loginMsg.innerText = `> ${matches}/6 ALIGNED. HINT: YOU ALREADY NOW IT JUST FOCUS.`;
+                        loginMsg.innerText = `> ${matches}/6 ALIGNED. HINT: THE PASSCODE IS STARING AT YOU.`;
                     } else {
                         loginMsg.innerText = `> ${matches}/6 CHARACTERS ALIGNED.`;
                     }
@@ -377,11 +443,24 @@
             if(logInterval) clearInterval(logInterval);
         }
 
+        // --- COMM-LINK LOGIC ---
         function openInstagram() {
-            window.location.href = "https://www.instagram.com/anomiac.exe?igsh=eXdjMmp4bGZtMHB3";
+            const redirectOverlay = document.getElementById('redirect-overlay');
+            
+            // Show terminal message overlay
+            redirectOverlay.classList.add('flex-show');
+            
+            // Wait 2 seconds, then redirect
+            setTimeout(() => {
+                window.location.href = "https://www.instagram.com/anomiac.exe?igsh=eXdjMmp4bGZtMHB3";
+                // Optional: remove overlay after a bit in case they come back
+                setTimeout(() => {
+                    redirectOverlay.classList.remove('flex-show');
+                }, 1000);
+            }, 2000);
         }
 
-        // --- ALBUM LOGIC (Updated Name) ---
+        // --- ALBUM LOGIC ---
         function renderAlbumMenu() {
             appContent.innerHTML = `
                 <div class="album-header-title">RÉFRACTION DE LA LUMIÈRE</div>
