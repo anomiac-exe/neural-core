@@ -201,7 +201,7 @@
 
     <div id="login-screen">
         <div style="font-family: 'Cormorant Garamond'; font-size: 2rem; margin-bottom: 10px;">ANOMIAC OS</div>
-        <div style="font-size: 10px; opacity: 0.6;">BIOMETRIC FAILURE. MANUAL OVERRIDE.</div>
+        <div style="font-size: 10px; opacity: 0.6;">BIOMETRIC FAILURE. ANOMIAC'S PERSONAL ARCHIVE IS LOADING</div>
         <div class="login-box">
             <input type="text" id="password-input" placeholder="PASSCODE" maxlength="6" autocomplete="off">
         </div>
@@ -321,7 +321,7 @@
                     wrongAttempts++;
                     loginMsg.style.color = 'var(--alert)';
                     if (wrongAttempts >= 2) {
-                        loginMsg.innerText = `> ${matches}/6 ALIGNED. HINT: THE PASSCODE IS STARING AT YOU.`;
+                        loginMsg.innerText = `> ${matches}/6 ALIGNED. HINT: YOU ALREADY NOW IT JUST FOCUS.`;
                     } else {
                         loginMsg.innerText = `> ${matches}/6 CHARACTERS ALIGNED.`;
                     }
