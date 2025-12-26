@@ -501,7 +501,7 @@ Chorus
 
 You’re the blade inside my chest, put my demons to the test
 I hate the way you make me feel, is this love or is it real?
-You’re my Harley Quinn, I’m your Joker in the cage
+We’re the ink in a script written by a sage,
 Burning down the city just to turn another page.
 I’m numb... yeah, I’m numb to the core.
 You kill me every night, but I come for more.
