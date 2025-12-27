@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEURAL CORE v2.2</title>
+    <title>NEURAL CORE v2.3</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=JetBrains+Mono:wght@300;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
@@ -25,7 +25,6 @@
             background-color: var(--bg);
             color: var(--text);
             font-family: 'JetBrains Mono', monospace;
-            /* Use dvh for true mobile full screen */
             height: 100vh;
             height: 100dvh; 
             overflow: hidden;
@@ -44,12 +43,32 @@
             opacity: 0.6;
         }
 
-        /* --- OVERLAYS (Success & Redirect) --- */
+        /* --- LANGUAGE TOGGLE --- */
+        #lang-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 3000;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text);
+            background: rgba(0,0,0,0.5);
+            border: 1px solid var(--text);
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        #lang-toggle:hover {
+            background: var(--text);
+            color: var(--bg);
+        }
+
+        /* --- OVERLAYS --- */
         .full-screen-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg);
             z-index: 2000;
-            display: none; /* Hidden by default */
+            display: none;
             justify-content: center; 
             align-items: center;
             text-align: center;
@@ -73,9 +92,12 @@
 
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
-        /* --- SCREEN 1: BOOT SEQUENCE --- */
-        #boot-screen {
+        /* --- SCREENS --- */
+        #boot-screen, #login-screen, #os-dashboard {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        }
+
+        #boot-screen {
             background: var(--bg);
             padding: 20px;
             font-size: 12px;
@@ -88,9 +110,7 @@
         .boot-line { margin-bottom: 2px; opacity: 0.7; }
         .boot-highlight { color: var(--matrix); }
 
-        /* --- SCREEN 2: LOGIN --- */
         #login-screen {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg);
             display: none;
             flex-direction: column;
@@ -115,17 +135,15 @@
             text-transform: uppercase;
             outline: none;
             letter-spacing: 5px;
-            border-radius: 0; /* iOS fix */
+            border-radius: 0;
         }
 
-        /* --- SCREEN 3: OS DASHBOARD --- */
         #os-dashboard {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: none;
             flex-direction: column;
             padding: 20px;
             z-index: 30;
-            justify-content: center; /* Center vertical */
+            justify-content: center;
         }
 
         .status-bar {
@@ -134,9 +152,7 @@
             font-size: 10px; padding-bottom: 10px; border-bottom: var(--border);
         }
 
-        .dashboard-content {
-            margin-top: 40px; /* Space from status bar */
-        }
+        .dashboard-content { margin-top: 40px; }
 
         .app-grid {
             display: grid;
@@ -161,7 +177,7 @@
         .material-icons-sharp { font-size: 40px; margin-bottom: 10px; }
         .icon-label { font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
 
-        /* --- APP MODALS (WINDOWS) --- */
+        /* --- APP WINDOW --- */
         .app-window {
             position: fixed; bottom: 0; left: 0; width: 100%; height: 0;
             background: var(--bg);
@@ -186,15 +202,15 @@
             overflow-y: auto;
             padding: 20px;
             font-family: 'Arial', sans-serif; 
-            -webkit-overflow-scrolling: touch; /* Smooth scroll iOS */
+            -webkit-overflow-scrolling: touch;
         }
 
-        /* GHOST APP STYLES */
+        /* GHOST APP */
         .progress-container { margin: 20px 0; border: 1px solid var(--text); padding: 4px; }
         .progress-bar { height: 20px; width: 64%; background: var(--text); }
         .sys-log { font-family: 'JetBrains Mono'; font-size: 10px; color: #666; margin-top: 20px; line-height: 1.4; }
 
-        /* ALBUM APP STYLES */
+        /* ALBUM APP */
         .folder-btn {
             width: 100%; padding: 15px; text-align: left;
             background: transparent; border: var(--border);
@@ -219,7 +235,7 @@
             text-transform: uppercase;
         }
 
-        /* SECURITY APP STYLES */
+        /* SECURITY APP */
         .log-entry { font-family: 'JetBrains Mono'; font-size: 11px; margin-bottom: 5px; }
         .log-ok { color: var(--matrix); }
         .log-warn { color: var(--alert); }
@@ -234,9 +250,11 @@
 <body>
 
     <div class="scanline"></div>
+    
+    <button id="lang-toggle" onclick="toggleLanguage()">[ EN ]</button>
 
     <div id="success-overlay" class="full-screen-overlay">
-        <div class="overlay-text">
+        <div class="overlay-text" data-translate="success_msg">
             Welcome, Researcher.<br><br>
             You found the gate.<br><br>
             Don't believe everything you hear in Folder 02...<br>
@@ -245,7 +263,7 @@
     </div>
 
     <div id="redirect-overlay" class="full-screen-overlay">
-        <div class="terminal-msg">
+        <div class="terminal-msg" data-translate="redirect_msg">
             [ESTABLISHING SECURE CHANNEL TO @ANOMIAC.EXE...]
         </div>
     </div>
@@ -256,7 +274,7 @@
 
     <div id="login-screen">
         <div style="font-family: 'Cormorant Garamond'; font-size: 2rem; margin-bottom: 10px;">ANOMIAC OS</div>
-        <div style="font-size: 10px; opacity: 0.6; letter-spacing: 1px;">[SYSTEM_AUTH_REQUIRED]</div>
+        <div style="font-size: 10px; opacity: 0.6; letter-spacing: 1px;" data-translate="auth_req">[SYSTEM_AUTH_REQUIRED]</div>
         <div class="login-box">
             <input type="text" id="password-input" placeholder="PASSCODE" maxlength="6" autocomplete="off">
         </div>
@@ -265,34 +283,34 @@
 
     <div id="os-dashboard">
         <div class="status-bar">
-            <span>SECURE_CONNECTION</span>
+            <span data-translate="secure_conn">SECURE_CONNECTION</span>
             <span id="clock">00:00</span>
         </div>
 
         <div class="dashboard-content">
             <div style="margin-bottom: 30px;">
-                <h1 style="font-family: 'Cormorant Garamond'; font-size: 3rem; line-height: 1;">NEURAL<br>CORE<span style="font-size:1rem; font-family:'JetBrains Mono'">v2.2</span></h1>
+                <h1 style="font-family: 'Cormorant Garamond'; font-size: 3rem; line-height: 1;">NEURAL<br>CORE<span style="font-size:1rem; font-family:'JetBrains Mono'">v2.3</span></h1>
             </div>
 
             <div class="app-grid">
                 <div class="app-icon" onclick="openApp('ghost')">
                     <span class="material-icons-sharp">folder_special</span>
-                    <span class="icon-label">Ghost_Project</span>
+                    <span class="icon-label" data-translate="app_ghost">Ghost_Project</span>
                 </div>
                 
                 <div class="app-icon" onclick="openApp('album')">
                     <span class="material-icons-sharp">album</span>
-                    <span class="icon-label">Album</span>
+                    <span class="icon-label" data-translate="app_album">Album</span>
                 </div>
 
                 <div class="app-icon" onclick="openApp('security')">
                     <span class="material-icons-sharp">security</span>
-                    <span class="icon-label">Security</span>
+                    <span class="icon-label" data-translate="app_security">Security</span>
                 </div>
 
                 <div class="app-icon" onclick="openInstagram()">
                     <span class="material-icons-sharp">forum</span>
-                    <span class="icon-label">Comm-Link</span>
+                    <span class="icon-label" data-translate="app_comms">Comm-Link</span>
                 </div>
             </div>
         </div>
@@ -310,7 +328,109 @@
     <script src="songs.js"></script>
 
     <script>
-        // --- BOOT SEQUENCE ---
+        // --- TRANSLATION MATRIX ---
+        const translations = {
+            en: {
+                // UI Elements
+                auth_req: "[SYSTEM_AUTH_REQUIRED]",
+                secure_conn: "SECURE_CONNECTION",
+                app_ghost: "Ghost_Project",
+                app_album: "Album",
+                app_security: "Security",
+                app_comms: "Comm-Link",
+                success_msg: "Welcome, Researcher.<br><br>You found the gate.<br><br>Don't believe everything you hear in Folder 02...<br>some of it was meant to stay encrypted.",
+                redirect_msg: "[ESTABLISHING SECURE CHANNEL TO @ANOMIAC.EXE...]",
+                // Dynamic JS Strings
+                passcode_ph: "PASSCODE",
+                access_granted: "ACCESS GRANTED",
+                aligned: "ALIGNED",
+                hint: "HINT: THE PASSCODE IS STARING AT YOU.",
+                chars_aligned: "CHARACTERS ALIGNED",
+                project_completion: "PROJECT COMPLETION:",
+                warning_title: "WARNING: CLASSIFIED DATA.",
+                ghost_desc: "I don't know how you got here, but this is classified information about my project.",
+                log_frag: "Data fragmented.",
+                log_rec: "Attempting recovery...",
+                log_admin: "Contact Admin (Anomiac) for full key.",
+                sec_monitor: "SECURITY MONITOR",
+                album_title: "ALBUM",
+                folder1: "[DIR] I HAVE REASONS TO WRITE THIS",
+                folder2: "[DIR] I DON'T HAVE A REASON TO WRITE THIS",
+                back: "< BACK",
+                // Fake Logs
+                l_firewall: "Firewall Active",
+                l_scan: "Scanning Ports...",
+                l_refused: "Connection Refused: IP 192.168.0.X",
+                l_trace: "Packet Tracing...",
+                l_enc: "Encryption: AES-256",
+                l_node: "Node Verification: Success"
+            },
+            fr: {
+                // UI Elements
+                auth_req: "[AUTHENTIFICATION_ REQUISE]",
+                secure_conn: "CONNEXION_SÉCURISÉE",
+                app_ghost: "Projet_Ghost",
+                app_album: "Album",
+                app_security: "Sécurité",
+                app_comms: "Comm-Lien",
+                success_msg: "Bienvenue, Chercheur.<br><br>Vous avez trouvé la porte.<br><br>Ne croyez pas tout ce que vous entendez dans le Dossier 02...<br>certaines choses devaient rester cryptées.",
+                redirect_msg: "[ÉTABLISSEMENT DU CANAL SÉCURISÉ VERS @ANOMIAC.EXE...]",
+                // Dynamic JS Strings
+                passcode_ph: "MOT DE PASSE",
+                access_granted: "ACCÈS AUTORISÉ",
+                aligned: "ALIGNÉS",
+                hint: "INDICE : LE MOT DE PASSE VOUS REGARDE.",
+                chars_aligned: "CARACTÈRES ALIGNÉS",
+                project_completion: "AVANCEMENT DU PROJET :",
+                warning_title: "ATTENTION : DONNÉES CLASSIFIÉES.",
+                ghost_desc: "Je ne sais pas comment vous êtes arrivé ici, mais ce sont des informations classifiées sur mon projet.",
+                log_frag: "Données fragmentées.",
+                log_rec: "Tentative de récupération...",
+                log_admin: "Contactez l'Admin (Anomiac) pour la clé.",
+                sec_monitor: "MONITEUR DE SÉCURITÉ",
+                album_title: "ALBUM",
+                folder1: "[DOSSIER] J'AI DES RAISONS D'ÉCRIRE ÇA",
+                folder2: "[DOSSIER] JE N'AI PAS DE RAISON D'ÉCRIRE ÇA",
+                back: "< RETOUR",
+                // Fake Logs
+                l_firewall: "Pare-feu Actif",
+                l_scan: "Scan des Ports...",
+                l_refused: "Connexion Refusée : IP 192.168.0.X",
+                l_trace: "Traçage de Paquets...",
+                l_enc: "Chiffrement : AES-256",
+                l_node: "Vérification Nœud : Succès"
+            }
+        };
+
+        let currentLang = 'en';
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'fr' : 'en';
+            
+            // Update Toggle Button Text
+            document.getElementById('lang-toggle').innerText = currentLang === 'en' ? '[ EN ]' : '[ FR ]';
+            
+            // Update Static HTML Elements
+            document.querySelectorAll('[data-translate]').forEach(el => {
+                const key = el.getAttribute('data-translate');
+                if (translations[currentLang][key]) {
+                    el.innerHTML = translations[currentLang][key];
+                }
+            });
+
+            // Update Placeholder
+            document.getElementById('password-input').placeholder = translations[currentLang].passcode_ph;
+
+            // If an app is open, refresh it to show new language
+            const openAppName = document.getElementById('app-title').getAttribute('data-app-type');
+            if (openAppName) openApp(openAppName);
+        }
+
+        function t(key) {
+            return translations[currentLang][key] || key;
+        }
+
+        // --- BOOT SEQUENCE (Always English/Code style for realism) ---
         const bootText = [
             "Initializing Kernel...",
             "Loading Neural Drivers...",
@@ -362,34 +482,28 @@
 
             if (val.length === 6) {
                 if (val === CORRECT_PASS) {
-                    // 1. Success Message on Input
                     loginMsg.style.color = 'var(--matrix)';
-                    loginMsg.innerText = "ACCESS GRANTED";
+                    loginMsg.innerText = t('access_granted');
                     passInput.disabled = true;
 
-                    // 2. Show Overlay after brief delay
-                    setTimeout(() => {
-                         successOverlay.classList.add('flex-show');
-                    }, 500);
+                    setTimeout(() => { successOverlay.classList.add('flex-show'); }, 500);
 
-                    // 3. Hide Overlay and Login, Show Dashboard after 4s
                     setTimeout(() => {
                         successOverlay.classList.remove('flex-show');
                         document.getElementById('login-screen').style.display = 'none';
                         document.getElementById('os-dashboard').style.display = 'flex';
-                    }, 2500);
+                    }, 4500);
 
                 } else {
                     let matches = 0;
-                    for(let i=0; i<6; i++) {
-                        if (val[i] === CORRECT_PASS[i]) matches++;
-                    }
+                    for(let i=0; i<6; i++) if (val[i] === CORRECT_PASS[i]) matches++;
+                    
                     wrongAttempts++;
                     loginMsg.style.color = 'var(--alert)';
                     if (wrongAttempts >= 2) {
-                        loginMsg.innerText = `> ${matches}/6 ALIGNED. HINT: THE PASSCODE IS STARING AT YOU.`;
+                        loginMsg.innerText = `> ${matches}/6 ${t('aligned')}. ${t('hint')}`;
                     } else {
-                        loginMsg.innerText = `> ${matches}/6 CHARACTERS ALIGNED.`;
+                        loginMsg.innerText = `> ${matches}/6 ${t('chars_aligned')}.`;
                     }
                 }
             } else {
@@ -404,59 +518,50 @@
 
         function openApp(appName) {
             appWindow.classList.add('show-app');
+            appTitle.setAttribute('data-app-type', appName); // Save state for translation refresh
             
             if (appName === 'ghost') {
-                appTitle.innerText = "Operation: GHOST";
+                appTitle.innerText = t('app_ghost');
                 appContent.innerHTML = `
-                    <div style="font-family: 'JetBrains Mono'; margin-bottom:10px;">PROJECT COMPLETION:</div>
-                    <div class="progress-container">
-                        <div class="progress-bar"></div>
-                    </div>
+                    <div style="font-family: 'JetBrains Mono'; margin-bottom:10px;">${t('project_completion')}</div>
+                    <div class="progress-container"><div class="progress-bar"></div></div>
                     <div style="text-align:right; font-size:12px;">64%</div>
                     <br>
                     <p style="color: var(--alert); border: 1px solid var(--alert); padding: 10px;">
-                        WARNING: CLASSIFIED DATA.
+                        ${t('warning_title')}
                     </p>
-                    <br>
-                    <p>I don't know how you got here, but this is classified information about my project.</p>
-                    <br>
+                    <br><p>${t('ghost_desc')}</p><br>
                     <div class="sys-log">
-                        > LOG_ENTRY_992: Data fragmented.<br>
-                        > LOG_ENTRY_993: Attempting recovery...<br>
-                        > LOG_ENTRY_994: Contact Admin (Anomiac) for full key.
+                        > LOG_ENTRY_992: ${t('log_frag')}<br>
+                        > LOG_ENTRY_993: ${t('log_rec')}<br>
+                        > LOG_ENTRY_994: ${t('log_admin')}
                     </div>
                 `;
             } 
             else if (appName === 'security') {
-                appTitle.innerText = "SECURITY MONITOR";
+                appTitle.innerText = t('sec_monitor');
                 appContent.innerHTML = `<div id="log-feed"></div>`;
                 startFakeLogs();
             }
             else if (appName === 'album') {
-                appTitle.innerText = "ALBUM";
+                appTitle.innerText = t('album_title');
                 renderAlbumMenu();
             }
         }
 
         function closeApp() {
             appWindow.classList.remove('show-app');
+            document.getElementById('app-title').removeAttribute('data-app-type');
             if(logInterval) clearInterval(logInterval);
         }
 
         // --- COMM-LINK LOGIC ---
         function openInstagram() {
             const redirectOverlay = document.getElementById('redirect-overlay');
-            
-            // Show terminal message overlay
             redirectOverlay.classList.add('flex-show');
-            
-            // Wait 2 seconds, then redirect
             setTimeout(() => {
                 window.location.href = "https://www.instagram.com/anomiac.exe?igsh=eXdjMmp4bGZtMHB3";
-                // Optional: remove overlay after a bit in case they come back
-                setTimeout(() => {
-                    redirectOverlay.classList.remove('flex-show');
-                }, 1000);
+                setTimeout(() => { redirectOverlay.classList.remove('flex-show'); }, 1000);
             }, 2000);
         }
 
@@ -464,15 +569,15 @@
         function renderAlbumMenu() {
             appContent.innerHTML = `
                 <div class="album-header-title">RÉFRACTION DE LA LUMIÈRE</div>
-                <button class="folder-btn" onclick="renderCategory(1)">[DIR] I HAVE REASONS TO WRITE THIS</button>
-                <button class="folder-btn" onclick="renderCategory(2)">[DIR] I DON'T HAVE A REASON TO WRITE THIS </button>
+                <button class="folder-btn" onclick="renderCategory(1)">${t('folder1')}</button>
+                <button class="folder-btn" onclick="renderCategory(2)">${t('folder2')}</button>
                 <div id="song-list-container" style="margin-top:20px;"></div>
             `;
         }
 
         function renderCategory(catId) {
             const container = document.getElementById('song-list-container');
-            let html = `<div onclick="renderAlbumMenu()" style="margin-bottom:15px; color:var(--alert); cursor:pointer;"> < BACK </div>`;
+            let html = `<div onclick="renderAlbumMenu()" style="margin-bottom:15px; color:var(--alert); cursor:pointer;"> ${t('back')} </div>`;
             
             const songs = catId === 1 ? albumData.category1 : albumData.category2;
 
@@ -480,11 +585,8 @@
                 let dir = 'ltr'; 
                 let align = 'left';
 
-                if (catId === 1) {
-                    dir = 'rtl'; align = 'right';
-                } else if (catId === 2 && index === 2) {
-                    dir = 'rtl'; align = 'right';
-                }
+                if (catId === 1) { dir = 'rtl'; align = 'right'; } 
+                else if (catId === 2 && index === 2) { dir = 'rtl'; align = 'right'; }
 
                 html += `
                     <div class="song-item" onclick="toggleLyrics('lyr-${index}')">
@@ -496,7 +598,6 @@
                     </div>
                 `;
             });
-            
             container.innerHTML = html;
         }
 
@@ -515,19 +616,21 @@
         function startFakeLogs() {
             const container = document.getElementById('log-feed');
             const messages = [
-                {text: "Firewall Active", type: "log-ok"},
-                {text: "Scanning Ports...", type: "log-ok"},
-                {text: "Connection Refused: IP 192.168.0.X", type: "log-warn"},
-                {text: "Packet Tracing...", type: "log-ok"},
-                {text: "Encryption: AES-256", type: "log-ok"},
-                {text: "Node Verification: Success", type: "log-ok"}
+                {key: "l_firewall", type: "log-ok"},
+                {key: "l_scan", type: "log-ok"},
+                {key: "l_refused", type: "log-warn"},
+                {key: "l_trace", type: "log-ok"},
+                {key: "l_enc", type: "log-ok"},
+                {key: "l_node", type: "log-ok"}
             ];
             
             let i = 0;
             container.innerHTML = "";
             logInterval = setInterval(() => {
-                const msg = messages[Math.floor(Math.random() * messages.length)];
-                container.innerHTML += `<div class="log-entry ${msg.type}">> ${msg.text}</div>`;
+                const msgData = messages[Math.floor(Math.random() * messages.length)];
+                // Translate log message dynamically
+                const text = t(msgData.key);
+                container.innerHTML += `<div class="log-entry ${msgData.type}">> ${text}</div>`;
                 container.scrollTop = container.scrollHeight;
                 i++;
                 if(i > 20) container.innerHTML = ""; 
