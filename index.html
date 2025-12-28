@@ -8,6 +8,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=JetBrains+Mono:wght@300;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
 
+    <script>
+        // Only load Umami if the site is NOT running on localhost
+        if (window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+            var script = document.createElement('script');
+            script.defer = true;
+            script.src = "https://cloud.umami.is/script.js";
+            script.setAttribute("data-website-id", "175140ff-6bbd-42ab-9d06-061680ca8057");
+            document.head.appendChild(script);
+        }
+    </script>
+
     <style>
         :root {
             --bg: #050505;
@@ -265,7 +276,7 @@
 
     <div class="scanline"></div>
     
-    <button id="lang-toggle" onclick="toggleLanguage()">[ EN ]</button>
+    <button id="lang-toggle" onclick="toggleLanguage()" data-umami-event="Toggle Language">[ EN ]</button>
 
     <div id="success-overlay" class="full-screen-overlay">
         <div class="overlay-text" data-translate="success_msg">
@@ -307,22 +318,22 @@
             </div>
 
             <div class="app-grid">
-                <div class="app-icon" onclick="openApp('ghost')">
+                <div class="app-icon" onclick="openApp('ghost')" data-umami-event="Open App: Ghost">
                     <span class="material-icons-sharp">folder_special</span>
                     <span class="icon-label" data-translate="app_ghost">Ghost_Project</span>
                 </div>
                 
-                <div class="app-icon" onclick="openApp('album')">
+                <div class="app-icon" onclick="openApp('album')" data-umami-event="Open App: Album">
                     <span class="material-icons-sharp">album</span>
                     <span class="icon-label" data-translate="app_album">Album</span>
                 </div>
 
-                <div class="app-icon" onclick="openApp('security')">
+                <div class="app-icon" onclick="openApp('security')" data-umami-event="Open App: Security">
                     <span class="material-icons-sharp">security</span>
                     <span class="icon-label" data-translate="app_security">Security</span>
                 </div>
 
-                <div class="app-icon" onclick="openApp('comm')">
+                <div class="app-icon" onclick="openApp('comm')" data-umami-event="Open App: Comms">
                     <span class="material-icons-sharp">forum</span>
                     <span class="icon-label" data-translate="app_comms">Comm-Link</span>
                 </div>
@@ -338,7 +349,6 @@
         <div id="app-content" class="app-content"></div>
     </div>
 
-    <script data-goatcounter="https://anomiac.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
     <script src="songs.js"></script>
 
     <script>
@@ -573,7 +583,7 @@
             if(logInterval) clearInterval(logInterval);
         }
 
-        // --- COMM-LINK LOGIC (UPDATED) ---
+        // --- COMM-LINK LOGIC (UPDATED WITH EVENT TRACKING) ---
         function renderCommMenu() {
             // Using predefined links
             const ig = "https://www.instagram.com/anomiac.exe?igsh=eXdjMmp4bGZtMHB3";
@@ -581,14 +591,15 @@
             const snap = "https://www.snapchat.com/add/imada_fada?share_id=SUac3AwVepc&locale=en-US";
             const anon = "https://anomiac.sarhne.com";
 
+            // Added data-umami-event to buttons below
             appContent.innerHTML = `
                 <div style="font-family: 'JetBrains Mono';">
                     <div style="margin-bottom: 20px; border-bottom: 1px dashed #333; padding-bottom: 10px; font-size: 10px; color: var(--matrix);">AVAILABLE_NODES:</div>
                     
-                    <button class="folder-btn" onclick="launchLink('${ig}', 'INSTAGRAM')">Node 01: [DIR] INSTAGRAM</button>
-                    <button class="folder-btn" onclick="launchLink('${fb}', 'FACEBOOK')">Node 02: [DIR] FACEBOOK</button>
-                    <button class="folder-btn" onclick="launchLink('${snap}', 'SNAPCHAT')">Node 03: [DIR] SNAPCHAT</button>
-                    <button class="folder-btn" onclick="launchLink('${anon}', 'ANONYMOUS_MSG')">Node 04: [DIR] ANONYMOUS_MSG</button>
+                    <button class="folder-btn" data-umami-event="Social Click: Instagram" onclick="launchLink('${ig}', 'INSTAGRAM')">Node 01: [DIR] INSTAGRAM</button>
+                    <button class="folder-btn" data-umami-event="Social Click: Facebook" onclick="launchLink('${fb}', 'FACEBOOK')">Node 02: [DIR] FACEBOOK</button>
+                    <button class="folder-btn" data-umami-event="Social Click: Snapchat" onclick="launchLink('${snap}', 'SNAPCHAT')">Node 03: [DIR] SNAPCHAT</button>
+                    <button class="folder-btn" data-umami-event="Social Click: Anonymous" onclick="launchLink('${anon}', 'ANONYMOUS_MSG')">Node 04: [DIR] ANONYMOUS_MSG</button>
 
                     <div style="margin-top: 40px; border-bottom: 1px dashed #333; padding-bottom: 10px; font-size: 10px; color: var(--alert);">RESTRICTED_AREAS:</div>
                     
@@ -618,12 +629,12 @@
             }, 1500);
         }
 
-        // --- ALBUM LOGIC ---
+        // --- ALBUM LOGIC (UPDATED WITH EVENT TRACKING) ---
         function renderAlbumMenu() {
             appContent.innerHTML = `
                 <div class="album-header-title">RÉFRACTION DE LA LUMIÈRE</div>
-                <button class="folder-btn" onclick="renderCategory(1)">${t('folder1')}</button>
-                <button class="folder-btn" onclick="renderCategory(2)">${t('folder2')}</button>
+                <button class="folder-btn" data-umami-event="Album: Folder 01" onclick="renderCategory(1)">${t('folder1')}</button>
+                <button class="folder-btn" data-umami-event="Album: Folder 02" onclick="renderCategory(2)">${t('folder2')}</button>
                 <div id="song-list-container" style="margin-top:20px;"></div>
             `;
         }
@@ -691,5 +702,24 @@
         }
 
     </script>
+
+    <script>
+        document.addEventListener('scroll', function() {
+            // Only track if umami is loaded
+            if (typeof umami !== 'undefined') {
+                const scrollPercent = Math.round((window.scrollY + window.innerHeight) / document.documentElement.scrollHeight * 100);
+                const marks = [25, 50, 75, 100];
+                
+                if (!window.loggedMarks) window.loggedMarks = [];
+        
+                marks.forEach(mark => {
+                    if (scrollPercent >= mark && !window.loggedMarks.includes(mark)) {
+                        window.loggedMarks.push(mark);
+                        umami.track('Scroll Depth', { percentage: mark + '%' });
+                    }
+                });
+            }
+        }, { passive: true });
+    </script>
 </body>
-</html> 
+</html>
