@@ -210,13 +210,16 @@
         .progress-bar { height: 20px; width: 64%; background: var(--text); }
         .sys-log { font-family: 'JetBrains Mono'; font-size: 10px; color: #666; margin-top: 20px; line-height: 1.4; }
 
-        /* ALBUM APP */
+        /* ALBUM & COMM APP */
         .folder-btn {
             width: 100%; padding: 15px; text-align: left;
             background: transparent; border: var(--border);
             color: var(--text); margin-bottom: 10px;
             font-family: 'JetBrains Mono'; cursor: pointer;
+            transition: 0.2s;
         }
+        .folder-btn:active { background: rgba(255,255,255,0.1); }
+        
         .song-item {
             padding: 15px 0; border-bottom: 1px dashed #333;
             cursor: pointer; display: flex; justify-content: space-between;
@@ -233,6 +236,17 @@
             padding-bottom: 10px;
             border-bottom: 1px dashed var(--text);
             text-transform: uppercase;
+        }
+
+        /* LOCKED ITEMS */
+        .locked-item {
+            font-family: 'JetBrains Mono';
+            font-size: 10px;
+            color: #666;
+            padding: 5px 0;
+            border-bottom: 1px solid #111;
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
         }
 
         /* SECURITY APP */
@@ -263,7 +277,7 @@
     </div>
 
     <div id="redirect-overlay" class="full-screen-overlay">
-        <div class="terminal-msg" data-translate="redirect_msg">
+        <div id="redirect-msg-content" class="terminal-msg">
             [ESTABLISHING SECURE CHANNEL TO @ANOMIAC.EXE...]
         </div>
     </div>
@@ -308,7 +322,7 @@
                     <span class="icon-label" data-translate="app_security">Security</span>
                 </div>
 
-                <div class="app-icon" onclick="openInstagram()">
+                <div class="app-icon" onclick="openApp('comm')">
                     <span class="material-icons-sharp">forum</span>
                     <span class="icon-label" data-translate="app_comms">Comm-Link</span>
                 </div>
@@ -339,7 +353,6 @@
                 app_security: "Security",
                 app_comms: "Comm-Link",
                 success_msg: "Welcome, Researcher.<br><br>You found the gate.<br><br>Don't believe everything you hear in Folder 02...<br>some of it was meant to stay encrypted.",
-                redirect_msg: "[ESTABLISHING SECURE CHANNEL TO @ANOMIAC.EXE...]",
                 // Dynamic JS Strings
                 passcode_ph: "PASSCODE",
                 access_granted: "ACCESS GRANTED",
@@ -354,6 +367,7 @@
                 log_admin: "Contact Admin (Anomiac) for full key.",
                 sec_monitor: "SECURITY MONITOR",
                 album_title: "ALBUM",
+                comm_title: "COMM-NODES",
                 folder1: "[DIR] I HAVE REASONS TO WRITE THIS",
                 folder2: "[DIR] I DON'T HAVE A REASON TO WRITE THIS",
                 back: "< BACK",
@@ -374,7 +388,6 @@
                 app_security: "Sécurité",
                 app_comms: "Comm-Lien",
                 success_msg: "Bienvenue, Chercheur.<br><br>Vous avez trouvé la porte.<br><br>Ne croyez pas tout ce que vous entendez dans le Dossier 02...<br>certaines choses devaient rester cryptées.",
-                redirect_msg: "[ÉTABLISSEMENT DU CANAL SÉCURISÉ VERS @ANOMIAC.EXE...]",
                 // Dynamic JS Strings
                 passcode_ph: "MOT DE PASSE",
                 access_granted: "ACCÈS AUTORISÉ",
@@ -389,6 +402,7 @@
                 log_admin: "Contactez l'Admin (Anomiac) pour la clé.",
                 sec_monitor: "MONITEUR DE SÉCURITÉ",
                 album_title: "ALBUM",
+                comm_title: "NŒUDS DE COMM",
                 folder1: "[DOSSIER] J'AI DES RAISONS D'ÉCRIRE ÇA",
                 folder2: "[DOSSIER] JE N'AI PAS DE RAISON D'ÉCRIRE ÇA",
                 back: "< RETOUR",
@@ -547,6 +561,10 @@
                 appTitle.innerText = t('album_title');
                 renderAlbumMenu();
             }
+            else if (appName === 'comm') {
+                appTitle.innerText = t('comm_title');
+                renderCommMenu();
+            }
         }
 
         function closeApp() {
@@ -555,14 +573,49 @@
             if(logInterval) clearInterval(logInterval);
         }
 
-        // --- COMM-LINK LOGIC ---
-        function openInstagram() {
-            const redirectOverlay = document.getElementById('redirect-overlay');
-            redirectOverlay.classList.add('flex-show');
+        // --- COMM-LINK LOGIC (UPDATED) ---
+        function renderCommMenu() {
+            // Using predefined links
+            const ig = "https://www.instagram.com/anomiac.exe?igsh=eXdjMmp4bGZtMHB3";
+            const fb = "https://www.facebook.com/share/17mVAL2Ei7/";
+            const snap = "https://www.snapchat.com/add/imada_fada?share_id=SUac3AwVepc&locale=en-US";
+            const anon = "https://anomiac.sarhne.com";
+
+            appContent.innerHTML = `
+                <div style="font-family: 'JetBrains Mono';">
+                    <div style="margin-bottom: 20px; border-bottom: 1px dashed #333; padding-bottom: 10px; font-size: 10px; color: var(--matrix);">AVAILABLE_NODES:</div>
+                    
+                    <button class="folder-btn" onclick="launchLink('${ig}', 'INSTAGRAM')">Node 01: [DIR] INSTAGRAM</button>
+                    <button class="folder-btn" onclick="launchLink('${fb}', 'FACEBOOK')">Node 02: [DIR] FACEBOOK</button>
+                    <button class="folder-btn" onclick="launchLink('${snap}', 'SNAPCHAT')">Node 03: [DIR] SNAPCHAT</button>
+                    <button class="folder-btn" onclick="launchLink('${anon}', 'ANONYMOUS_MSG')">Node 04: [DIR] ANONYMOUS_MSG</button>
+
+                    <div style="margin-top: 40px; border-bottom: 1px dashed #333; padding-bottom: 10px; font-size: 10px; color: var(--alert);">RESTRICTED_AREAS:</div>
+                    
+                    <div class="locked-item">[LOCKED] PROFESSIONAL_EMAIL - ACCESS_DENIED</div>
+                    <div class="locked-item">[LOCKED] LINKEDIN_PROFILE - INACCESSIBLE_FOR_CURRENT_CLEARANCE</div>
+                    <div class="locked-item">[LOCKED] REDDIT_PROFILE - ACCESS_DENIED</div>
+                    <div class="locked-item">[LOCKED] X"TWITTER"_PROFILE - INACCESSIBLE</div>
+                    <div class="locked-item">[LOCKED] TELEGRAM - BANNED</div>
+                    <div class="locked-item">[LOCKED] PROFESSIONAL_ACCOUNTS_AND_SITES - INACCESSIBLE_FOR_YOU_AT_THE_MOMENT</div>
+                </div>
+            `;
+        }
+
+        function launchLink(url, nodeName) {
+            const overlay = document.getElementById('redirect-overlay');
+            const msgEl = document.getElementById('redirect-msg-content');
+            
+            // Set dynamic terminal message
+            msgEl.innerHTML = `[ESTABLISHING SECURE CHANNEL TO ${nodeName}...]`;
+            
+            overlay.classList.add('flex-show');
+            
             setTimeout(() => {
-                window.location.href = "https://www.instagram.com/anomiac.exe?igsh=eXdjMmp4bGZtMHB3";
-                setTimeout(() => { redirectOverlay.classList.remove('flex-show'); }, 1000);
-            }, 2000);
+                window.location.href = url;
+                // Auto hide overlay after redirect (in case user comes back)
+                setTimeout(() => { overlay.classList.remove('flex-show'); }, 1000);
+            }, 1500);
         }
 
         // --- ALBUM LOGIC ---
@@ -639,4 +692,4 @@
 
     </script>
 </body>
-</html>
+</html> 
